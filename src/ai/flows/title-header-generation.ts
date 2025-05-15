@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview Generates suitable titles and headers (H1 tags) for articles.
+ * All responses will be in Spanish.
  *
  * - generateTitlesHeaders - A function that generates titles and headers.
  * - GenerateTitlesHeadersInput - The input type for the generateTitlesHeaders function.
@@ -25,8 +26,8 @@ const GenerateTitlesHeadersInputSchema = z.object({
 export type GenerateTitlesHeadersInput = z.infer<typeof GenerateTitlesHeadersInputSchema>;
 
 const GenerateTitlesHeadersOutputSchema = z.object({
-  titleSuggestions: z.array(z.string()).describe('Suggested titles for the content.'),
-  headerSuggestions: z.array(z.string()).describe('Suggested H1 headers for the content.'),
+  titleSuggestions: z.array(z.string()).describe('Suggested titles for the content. En ESPAÑOL.'),
+  headerSuggestions: z.array(z.string()).describe('Suggested H1 headers for the content. En ESPAÑOL.'),
 });
 
 export type GenerateTitlesHeadersOutput = z.infer<typeof GenerateTitlesHeadersOutputSchema>;
@@ -39,26 +40,27 @@ const prompt = ai.definePrompt({
   name: 'generateTitlesHeadersPrompt',
   input: {schema: GenerateTitlesHeadersInputSchema},
   output: {schema: GenerateTitlesHeadersOutputSchema},
-  prompt: `You are an expert SEO copywriter specializing in generating engaging and optimized titles and headers for articles.
+  prompt: `Eres un experto redactor SEO especializado en generar títulos y encabezados atractivos y optimizados para artículos.
+  Toda tu respuesta DEBE estar en ESPAÑOL.
 
-  Based on the provided content details, target country, SEO keywords, and desired style preferences, generate a list of suitable titles and H1 headers.
+  Basándote en los detalles del contenido proporcionado, país de destino, palabras clave SEO y preferencias de estilo deseadas, genera una lista de títulos y encabezados H1 adecuados.
 
-  Topic: {{{topic}}}
-  Country: {{{country}}}
-  Content: {{{content}}}
-  Primary Keyword: {{{primaryKeyword}}}
-  Secondary Keywords: {{{secondaryKeywords}}}
-  LSI Keywords: {{{lsiKeywords}}}
-  Tone: {{{tone}}}
-  Voice: {{{voice}}}
-  Writing Style: {{{writingStyle}}}
+  Tema: {{topic}}
+  País: {{country}}
+  Contenido: {{{content}}}
+  Palabra Clave Principal: {{primaryKeyword}}
+  Palabras Clave Secundarias: {{secondaryKeywords}}
+  Palabras Clave LSI: {{lsiKeywords}}
+  Tono: {{tone}}
+  Voz: {{voice}}
+  Estilo de Escritura: {{writingStyle}}
 
-  Titles should be attention-grabbing and incorporate the primary keyword.
-  Headers (H1 tags) should be clear, concise, and relevant to the content.
+  Los títulos deben ser llamativos e incorporar la palabra clave principal.
+  Los encabezados (etiquetas H1) deben ser claros, concisos y relevantes para el contenido.
 
-  Provide title suggestions and H1 header suggestions as arrays of strings.
+  Proporciona sugerencias de títulos y sugerencias de encabezados H1 como arrays de strings.
 
-  Output the title and header suggestions in JSON format.
+  Emite las sugerencias de títulos y encabezados en formato JSON.
   `,config: {
     safetySettings: [
       {

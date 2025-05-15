@@ -5,6 +5,7 @@
  *
  * This file defines a Genkit flow for suggesting primary, secondary, and LSI keywords
  * with search volume and ranking difficulty based on the content provided by the user.
+ * All responses will be in Spanish.
  *
  * @remarks
  * The flow takes content topic and target country as input.
@@ -41,9 +42,9 @@ const KeywordSuggestionInputSchema = z.object({
 export type KeywordSuggestionInput = z.infer<typeof KeywordSuggestionInputSchema>;
 
 const KeywordSuggestionOutputSchema = z.object({
-  primaryKeyword: z.string().describe('The primary keyword for the content, including search volume and ranking difficulty.'),
-  secondaryKeywords: z.array(z.string()).describe('Secondary keywords for the content, including search volume and ranking difficulty.'),
-  lsiKeywords: z.array(z.string()).describe('LSI (Latent Semantic Indexing) keywords for the content, including search volume and ranking difficulty.'),
+  primaryKeyword: z.string().describe('La palabra clave principal para el contenido (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  secondaryKeywords: z.array(z.string()).describe('Palabras clave secundarias para el contenido (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  lsiKeywords: z.array(z.string()).describe('Palabras clave LSI (Latent Semantic Indexing) para el contenido (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
 });
 
 export type KeywordSuggestionOutput = z.infer<typeof KeywordSuggestionOutputSchema>;
@@ -56,22 +57,24 @@ const keywordSuggestionPrompt = ai.definePrompt({
   name: 'keywordSuggestionPrompt',
   input: {schema: KeywordSuggestionInputSchema},
   output: {schema: KeywordSuggestionOutputSchema},
-  prompt: `You are an SEO expert specializing in keyword research.
-  Given the following content topic, target country, content, tone, voice, and writing style, suggest a primary keyword, secondary keywords, and LSI keywords with their search volume and ranking difficulty.
+  prompt: `Eres un experto en SEO especializado en investigación de palabras clave.
+  Toda tu respuesta DEBE estar en ESPAÑOL.
+  Dado el siguiente tema de contenido, país de destino, contenido, tono, voz y estilo de escritura, sugiere una palabra clave principal, palabras clave secundarias y palabras clave LSI.
+  Para cada palabra clave, proporciona un volumen de búsqueda mensual estimado y una estimación de la dificultad de ranking (por ejemplo, baja, media, alta).
 
-  Topic: {{{topic}}}
-  Country: {{{country}}}
-  Content: {{{content}}}
-  Tone: {{{tone}}}
-  Voice: {{{voice}}}
-  Writing Style: {{{writingStyle}}}
+  Tema: {{topic}}
+  País: {{country}}
+  Contenido: {{{content}}}
+  Tono: {{tone}}
+  Voz: {{voice}}
+  Estilo de Escritura: {{writingStyle}}
 
-  Provide the keywords in the following format:
+  Proporciona las palabras clave en el siguiente formato JSON exacto:
 
   {
-    "primaryKeyword": "keyword (search volume, ranking difficulty)",
-    "secondaryKeywords": ["keyword (search volume, ranking difficulty)", "keyword (search volume, ranking difficulty)"],
-    "lsiKeywords": ["keyword (search volume, ranking difficulty)", "keyword (search volume, ranking difficulty)"]
+    "primaryKeyword": "palabra clave (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])",
+    "secondaryKeywords": ["palabra clave secundaria 1 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])", "palabra clave secundaria 2 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])"],
+    "lsiKeywords": ["palabra clave LSI 1 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])", "palabra clave LSI 2 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])"]
   }
   `,
 });

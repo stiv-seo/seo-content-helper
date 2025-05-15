@@ -2,7 +2,8 @@
 
 /**
  * @fileOverview Analyzes content topic and target country, compares it against
- * existing indexed data, and identifies areas for improvement using AI.
+ * existing indexed data (including SERP analysis), and identifies areas for improvement using AI.
+ * All responses will be in Spanish.
  *
  * - contentBenchmark - A function that handles the content benchmarking process.
  * - ContentBenchmarkInput - The input type for the contentBenchmark function.
@@ -13,20 +14,21 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ContentBenchmarkInputSchema = z.object({
-  topic: z.string().describe('The topic of the content.'),
-  country: z.string().describe('The target country for the content.'),
-  content: z.string().optional().describe('The content to be analyzed, if available.'),
-  tone: z.string().optional().describe('The desired tone of the content.'),
-  voice: z.string().optional().describe('The desired voice of the content.'),
-  writingStyle: z.string().optional().describe('The desired writing style of the content.'),
+  topic: z.string().describe('El tema del contenido.'),
+  country: z.string().describe('El país de destino para el contenido.'),
+  content: z.string().optional().describe('El contenido a analizar, si está disponible.'),
+  tone: z.string().optional().describe('El tono deseado del contenido.'),
+  voice: z.string().optional().describe('La voz deseada del contenido.'),
+  writingStyle: z.string().optional().describe('El estilo de escritura deseado para el contenido.'),
 });
 export type ContentBenchmarkInput = z.infer<typeof ContentBenchmarkInputSchema>;
 
 const ContentBenchmarkOutputSchema = z.object({
-  analysis: z.string().describe('The analysis of the content and suggestions for improvement.'),
-  primaryKeyword: z.string().optional().describe('Suggested primary keyword.'),
-  secondaryKeywords: z.array(z.string()).optional().describe('Suggested secondary keywords.'),
-  lsiKeywords: z.array(z.string()).optional().describe('Suggested LSI keywords.'),
+  analysis: z.string().describe('El análisis del contenido y sugerencias de mejora. En ESPAÑOL.'),
+  primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  serpAnalysis: z.string().optional().describe("Hallazgos clave del análisis de los primeros 20 resultados de las SERPs. En ESPAÑOL."),
 });
 export type ContentBenchmarkOutput = z.infer<typeof ContentBenchmarkOutputSchema>;
 
@@ -36,53 +38,77 @@ export async function contentBenchmark(input: ContentBenchmarkInput): Promise<Co
 
 const analyzeContentTool = ai.defineTool({
   name: 'analyzeContent',
-  description: 'Analyzes content based on topic and country to identify areas for improvement.',
+  description: 'Analiza el contenido proporcionado basándose en el tema y el país para identificar áreas de mejora.',
   inputSchema: z.object({
-    topic: z.string().describe('The topic of the content.'),
-    country: z.string().describe('The target country for the content.'),
-    content: z.string().optional().describe('The content to be analyzed, if available.'),
+    topic: z.string().describe('El tema del contenido.'),
+    country: z.string().describe('El país de destino para el contenido.'),
+    content: z.string().optional().describe('El contenido a ser analizado, si está disponible.'),
   }),
-  outputSchema: z.string().describe('The analysis of the content and suggestions for improvement.'),
+  outputSchema: z.string().describe('El análisis del contenido y sugerencias de mejora. En ESPAÑOL.'),
 }, async (input) => {
   // Placeholder implementation for content analysis. Replace with actual analysis logic.
-  return `Analysis of content for topic: ${input.topic} in ${input.country}.  Current content: ${input.content ?? 'Not provided'}`;
+  return `Análisis del contenido para el tema: "${input.topic}" en ${input.country}. Contenido actual: ${input.content ?? 'No proporcionado'}. [Este es un análisis placeholder en ESPAÑOL. Se deben incluir aquí observaciones sobre la calidad, estructura, y relevancia del contenido.]`;
 });
 
 const suggestKeywordsTool = ai.defineTool({
   name: 'suggestKeywords',
-  description: 'Suggests primary, secondary, and LSI keywords with search volume and ranking difficulty.',
+  description: 'Sugiere palabras clave primarias, secundarias y LSI con volumen de búsqueda estimado y dificultad de ranking.',
   inputSchema: z.object({
-    topic: z.string().describe('The topic of the content.'),
-    country: z.string().describe('The target country for the content.'),
+    topic: z.string().describe('El tema del contenido.'),
+    country: z.string().describe('El país de destino para el contenido.'),
   }),
   outputSchema: z.object({
-    primaryKeyword: z.string().optional().describe('Suggested primary keyword.'),
-    secondaryKeywords: z.array(z.string()).optional().describe('Suggested secondary keywords.'),
-    lsiKeywords: z.array(z.string()).optional().describe('Suggested LSI keywords.'),
+    primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+    secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+    lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
   }),
 }, async (input) => {
   // Placeholder implementation for keyword suggestion. Replace with actual keyword suggestion logic.
   return {
-    primaryKeyword: `primary keyword for ${input.topic}`,
-    secondaryKeywords: [`secondary keyword 1 for ${input.topic}`, `secondary keyword 2 for ${input.topic}`],
-    lsiKeywords: [`lsi keyword 1 for ${input.topic}`, `lsi keyword 2 for ${input.topic}`],
+    primaryKeyword: `palabra clave principal para ${input.topic} (volumen: 1500, dificultad: media)`,
+    secondaryKeywords: [`palabra clave secundaria 1 para ${input.topic} (volumen: 700, dificultad: baja)`, `palabra clave secundaria 2 para ${input.topic} (volumen: 300, dificultad: alta)`],
+    lsiKeywords: [`palabra clave LSI 1 para ${input.topic} (volumen: 100, dificultad: baja)`, `palabra clave LSI 2 para ${input.topic} (volumen: 50, dificultad: media)`],
   };
 });
 
+const analyzeSERPTool = ai.defineTool({
+  name: 'analyzeSERP',
+  description: 'Analiza los primeros 20 resultados de las SERPs para un tema y país dados, y devuelve hallazgos clave para el posicionamiento.',
+  inputSchema: z.object({
+    topic: z.string().describe('El tema para el cual analizar las SERPs.'),
+    country: z.string().describe('El país para el cual analizar las SERPs.'),
+  }),
+  outputSchema: z.string().describe("Un resumen de los hallazgos clave de las SERPs, incluyendo patrones comunes, tipos de contenido dominantes, y oportunidades identificadas. En ESPAÑOL."),
+}, async (input) => {
+  // Placeholder for actual SERP analysis logic
+  return `Análisis SERP para '${input.topic}' en '${input.country}': [Este es un placeholder para los hallazgos de SERP en ESPAÑOL. Se identificarían aquí los tipos de contenido (ej. artículos de blog, videos, páginas de producto), la intención de búsqueda promedio (informativa, transaccional), la autoridad de los dominios principales (estimación), y las brechas de contenido u oportunidades (ej. falta de guías completas, poca información sobre X aspecto específico).]`;
+});
+
+
 const prompt = ai.definePrompt({
   name: 'contentBenchmarkPrompt',
-  tools: [analyzeContentTool, suggestKeywordsTool],
+  tools: [analyzeContentTool, suggestKeywordsTool, analyzeSERPTool],
   input: {schema: ContentBenchmarkInputSchema},
   output: {schema: ContentBenchmarkOutputSchema},
-  prompt: `You are an SEO expert. The user wants to optimize content for the topic "{{topic}}" in "{{country}}".
+  prompt: `Eres un experto SEO y estratega de contenidos. Toda tu respuesta DEBE estar en ESPAÑOL.
+  El usuario quiere optimizar contenido para el tema "{{topic}}" en "{{country}}".
 
-  Analyze the content using the analyzeContent tool, and suggest keywords using the suggestKeywords tool.
+  1.  Analiza el contenido proporcionado (si existe) usando la herramienta 'analyzeContent'.
+  2.  Sugiere palabras clave (principal, secundarias, LSI) con su volumen de búsqueda estimado y dificultad de ranking usando la herramienta 'suggestKeywords'. Asegúrate que el formato sea "palabra (volumen: X, dificultad: Y)".
+  3.  Analiza los primeros 20 resultados de las SERPs para el tema y país dados usando la herramienta 'analyzeSERP'. Identifica patrones, tipos de contenido dominantes y oportunidades de posicionamiento.
+  4.  Basándote en toda la información recopilada, proporciona un análisis general ('analysis') que resuma los hallazgos clave, cómo el contenido actual se compara (si se proporcionó), y recomendaciones específicas para mejorar el ranking. Este análisis debe integrar los insights del contenido, palabras clave y SERPs.
+  5.  Rellena el campo 'serpAnalysis' con los hallazgos detallados de la herramienta 'analyzeSERP'.
+  6.  Asegúrate de que los campos de palabras clave en la salida final sigan el formato "palabra (volumen: X, dificultad: Y)".
 
-  Desired tone: {{tone}}
-  Desired voice: {{voice}}
-  Desired writing style: {{writingStyle}}
 
-  Provide a comprehensive analysis and keyword suggestions to improve search engine ranking.
+  Tema: {{topic}}
+  País: {{country}}
+  {{#if content}}Contenido existente: {{{content}}}{{/if}}
+  Tono deseado: {{tone}}
+  Voz deseada: {{voice}}
+  Estilo de escritura deseado: {{writingStyle}}
+
+  Proporciona un análisis SEO completo y sugerencias de palabras clave y contenido para mejorar el ranking en motores de búsqueda. Asegúrate de que toda la salida esté en ESPAÑOL y siga el esquema JSON proporcionado.
   `,
 });
 

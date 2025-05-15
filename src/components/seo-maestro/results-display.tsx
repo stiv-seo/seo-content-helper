@@ -3,7 +3,7 @@
 import type { AnalysisResults } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, Lightbulb, ListChecks, Zap } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Lightbulb, ListChecks, Zap, SearchCheck } from 'lucide-react';
 
 interface ResultsDisplayProps {
   results: AnalysisResults | null;
@@ -39,6 +39,8 @@ export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProp
           <div className="h-4 bg-muted rounded w-full"></div>
           <div className="h-4 bg-muted rounded w-5/6"></div>
           <div className="h-4 bg-muted rounded w-3/4"></div>
+          <div className="h-4 bg-muted rounded w-full mt-2"></div>
+          <div className="h-4 bg-muted rounded w-5/6"></div>
         </CardContent>
       </Card>
     );
@@ -85,6 +87,17 @@ export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProp
           </CardHeader>
           <CardContent>
             <p className="text-foreground/90 whitespace-pre-wrap">{results.benchmark.analysis}</p>
+            
+            {results.benchmark.serpAnalysis && (
+              <div className="mt-6 pt-4 border-t">
+                <h3 className="text-xl font-semibold mb-3 flex items-center text-primary">
+                  <SearchCheck className="w-5 h-5 mr-2" />
+                  Análisis de Resultados de Búsqueda (SERP)
+                </h3>
+                <p className="text-foreground/90 whitespace-pre-wrap">{results.benchmark.serpAnalysis}</p>
+              </div>
+            )}
+
             <KeywordsList title="Palabra Clave Principal Sugerida" keywords={results.benchmark.primaryKeyword ? [results.benchmark.primaryKeyword] : []} icon={Zap} />
             <KeywordsList title="Palabras Clave Secundarias Sugeridas" keywords={results.benchmark.secondaryKeywords} icon={Zap} />
             <KeywordsList title="Palabras Clave LSI Sugeridas" keywords={results.benchmark.lsiKeywords} icon={Zap} />

@@ -32,7 +32,7 @@ export default function SeoMaestroPage() {
   const onSubmit = async (values: SeoFormValues) => {
     setIsLoading(true);
     setError(null);
-    setResults(null); 
+    setResults(null);
 
     try {
       const analysisData = await performFullAnalysisAction(values);
@@ -80,7 +80,7 @@ export default function SeoMaestroPage() {
       </main>
       <footer className="py-6 px-4 md:px-8 border-t mt-12">
         <div className="container mx-auto text-center text-muted-foreground text-sm">
-          <p>&copy; {new Date().getFullYear()} SEO Maestro. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} SEO Content Helper. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>

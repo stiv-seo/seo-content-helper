@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { SeoFormValues } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 
@@ -21,6 +22,11 @@ interface SeoFormProps {
   onSubmit: (values: SeoFormValues) => void;
   isLoading: boolean;
 }
+
+const toneOptions = ["Amigable", "Profesional", "Humorístico", "Serio", "Conversacional", "Informativo", "Persuasivo", "Urgente", "Empático", "Neutro"];
+const voiceOptions = ["Experto", "Cercano", "Autoritario", "Inspirador", "Didáctico", "Corporativa", "Juvenil", "Guía"];
+const writingStyleOptions = ["Narrativo", "Descriptivo", "Expositivo", "Argumentativo", "Técnico", "Creativo", "Periodístico", "Claro y conciso"];
+
 
 export function SeoForm({ form, onSubmit, isLoading }: SeoFormProps) {
   return (
@@ -88,9 +94,18 @@ export function SeoForm({ form, onSubmit, isLoading }: SeoFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Tono (Opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: Informal, Persuasivo" {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un tono" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {toneOptions.map(option => (
+                      <SelectItem key={option} value={option.toLowerCase()}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -102,9 +117,18 @@ export function SeoForm({ form, onSubmit, isLoading }: SeoFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Voz (Opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: Experto, Amigable" {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una voz" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {voiceOptions.map(option => (
+                      <SelectItem key={option} value={option.toLowerCase()}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -116,9 +140,18 @@ export function SeoForm({ form, onSubmit, isLoading }: SeoFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estilo de Escritura (Opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: Narrativo, Descriptivo" {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un estilo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {writingStyleOptions.map(option => (
+                      <SelectItem key={option} value={option.toLowerCase()}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
