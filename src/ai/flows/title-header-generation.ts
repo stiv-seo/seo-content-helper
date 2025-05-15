@@ -14,8 +14,8 @@ import {z} from 'genkit';
 
 const GenerateTitlesHeadersInputSchema = z.object({
   topic: z.string().describe('The topic of the content.'),
-  country: z.string().describe('The target country for the content.'),
-  content: z.string().describe('The content to analyze.'),
+  country: z.string().describe('The target country for the content. Used for contextual understanding of search behavior, keyword volume, and difficulty. It should NOT be automatically included in titles/headers unless specified by SEO analysis or content nature.'),
+  content: z.string().describe('The content to analyze. This might include prior SEO analysis or benchmark results.'),
   primaryKeyword: z.string().describe('The primary keyword for the content.'),
   secondaryKeywords: z.string().describe('Secondary keywords related to the content, separated by commas.'),
   lsiKeywords: z.string().describe('LSI (Latent Semantic Indexing) keywords, separated by commas.'),
@@ -46,9 +46,14 @@ const prompt = ai.definePrompt({
 
   Basándote en los detalles del contenido proporcionado, país de destino, palabras clave SEO y preferencias de estilo deseadas, genera una lista de títulos y encabezados H1 adecuados.
 
+  Consideraciones Importantes:
+  - El país de destino ({{country}}) se proporciona principalmente para darte contexto sobre cómo los usuarios buscan en esa región y para entender el mercado objetivo.
+  - NO incluyas el nombre del país ({{country}}) en los títulos o encabezados H1 sugeridos, a menos que el análisis SEO (que podría estar implícito en el 'Contenido' proporcionado) o la naturaleza intrínseca del 'Tema' y 'Palabra Clave Principal' lo hagan absolutamente esencial para la relevancia y el SEO. Por ejemplo, si el tema es 'Los mejores restaurantes en {{country}}', entonces sí sería apropiado. En la mayoría de los otros casos, evita mencionarlo directamente.
+
+  Información de Entrada:
   Tema: {{topic}}
-  País: {{country}}
-  Contenido: {{{content}}}
+  País (para contexto): {{country}}
+  Contenido (puede incluir análisis SEO previo): {{{content}}}
   Palabra Clave Principal: {{primaryKeyword}}
   Palabras Clave Secundarias: {{secondaryKeywords}}
   Palabras Clave LSI: {{lsiKeywords}}
@@ -56,12 +61,12 @@ const prompt = ai.definePrompt({
   Voz deseada: {{voice}}
   Estilo de Escritura deseado: {{writingStyle}}
 
-  Los títulos deben ser llamativos e incorporar la palabra clave principal.
-  Los encabezados (etiquetas H1) deben ser claros, concisos y relevantes para el contenido.
-  Asegúrate de que los títulos y encabezados reflejen el Tono ({{tone}}), la Voz ({{voice}}) y el Estilo de Escritura ({{writingStyle}}) especificados.
+  Requisitos para las Sugerencias:
+  - Los títulos deben ser llamativos e incorporar la palabra clave principal de forma natural.
+  - Los encabezados (etiquetas H1) deben ser claros, concisos, relevantes para el contenido y también incorporar la palabra clave principal cuando sea pertinente.
+  - Asegúrate de que los títulos y encabezados reflejen el Tono ({{tone}}), la Voz ({{voice}}) y el Estilo de Escritura ({{writingStyle}}) especificados.
 
   Proporciona sugerencias de títulos y sugerencias de encabezados H1 como arrays de strings.
-
   Emite las sugerencias de títulos y encabezados en formato JSON.
   `,config: {
     safetySettings: [
