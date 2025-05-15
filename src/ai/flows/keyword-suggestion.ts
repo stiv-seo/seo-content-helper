@@ -1,3 +1,4 @@
+
 // keyword-suggestion.ts
 'use server';
 /**
@@ -42,9 +43,9 @@ const KeywordSuggestionInputSchema = z.object({
 export type KeywordSuggestionInput = z.infer<typeof KeywordSuggestionInputSchema>;
 
 const KeywordSuggestionOutputSchema = z.object({
-  primaryKeyword: z.string().describe('La palabra clave principal para el contenido (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
-  secondaryKeywords: z.array(z.string()).describe('Palabras clave secundarias para el contenido (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
-  lsiKeywords: z.array(z.string()).describe('Palabras clave LSI (Latent Semantic Indexing) para el contenido (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  primaryKeyword: z.string().describe('La palabra clave principal para el contenido (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
+  secondaryKeywords: z.array(z.string()).describe('Palabras clave secundarias para el contenido (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
+  lsiKeywords: z.array(z.string()).describe('Palabras clave LSI (Latent Semantic Indexing) para el contenido (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
 });
 
 export type KeywordSuggestionOutput = z.infer<typeof KeywordSuggestionOutputSchema>;
@@ -60,7 +61,7 @@ const keywordSuggestionPrompt = ai.definePrompt({
   prompt: `Eres un experto en SEO especializado en investigación de palabras clave.
   Toda tu respuesta DEBE estar en ESPAÑOL.
   Dado el siguiente tema de contenido, país de destino, contenido, tono, voz y estilo de escritura, sugiere una palabra clave principal, palabras clave secundarias y palabras clave LSI.
-  Para cada palabra clave, proporciona un volumen de búsqueda mensual estimado y una estimación de la dificultad de ranking (por ejemplo, baja, media, alta).
+  Para cada palabra clave, proporciona un volumen de búsqueda mensual estimado (un número, ej: 1200) y una estimación de la dificultad de ranking (ej: baja, media, alta).
 
   Tema: {{topic}}
   País: {{country}}
@@ -72,9 +73,9 @@ const keywordSuggestionPrompt = ai.definePrompt({
   Proporciona las palabras clave en el siguiente formato JSON exacto:
 
   {
-    "primaryKeyword": "palabra clave (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])",
-    "secondaryKeywords": ["palabra clave secundaria 1 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])", "palabra clave secundaria 2 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])"],
-    "lsiKeywords": ["palabra clave LSI 1 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])", "palabra clave LSI 2 (volumen: [VOLUMEN ESTIMADO], dificultad: [DIFICULTAD ESTIMADA])"]
+    "primaryKeyword": "palabra clave (volumen: 850, dificultad: media)",
+    "secondaryKeywords": ["palabra clave secundaria 1 (volumen: 320, dificultad: baja)", "palabra clave secundaria 2 (volumen: 150, dificultad: alta)"],
+    "lsiKeywords": ["palabra clave LSI 1 (volumen: 50, dificultad: baja)", "palabra clave LSI 2 (volumen: 20, dificultad: media)"]
   }
   `,
 });

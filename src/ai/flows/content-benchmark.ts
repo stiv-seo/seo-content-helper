@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -25,9 +26,9 @@ export type ContentBenchmarkInput = z.infer<typeof ContentBenchmarkInputSchema>;
 
 const ContentBenchmarkOutputSchema = z.object({
   analysis: z.string().describe('El análisis del contenido y sugerencias de mejora. En ESPAÑOL.'),
-  primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
-  secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
-  lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+  primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
+  secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
+  lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
   serpAnalysis: z.string().optional().describe("Hallazgos clave del análisis de los primeros 20 resultados de las SERPs. En ESPAÑOL."),
 });
 export type ContentBenchmarkOutput = z.infer<typeof ContentBenchmarkOutputSchema>;
@@ -52,15 +53,15 @@ const analyzeContentTool = ai.defineTool({
 
 const suggestKeywordsTool = ai.defineTool({
   name: 'suggestKeywords',
-  description: 'Sugiere palabras clave primarias, secundarias y LSI con volumen de búsqueda estimado y dificultad de ranking.',
+  description: 'Sugiere palabras clave primarias, secundarias y LSI con volumen de búsqueda estimado y dificultad de ranking. El volumen debe ser un número y la dificultad "baja", "media" o "alta".',
   inputSchema: z.object({
     topic: z.string().describe('El tema del contenido.'),
     country: z.string().describe('El país de destino para el contenido.'),
   }),
   outputSchema: z.object({
-    primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
-    secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
-    lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: X, dificultad: Y)"). En ESPAÑOL.'),
+    primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
+    secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
+    lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
   }),
 }, async (input) => {
   // Placeholder implementation for keyword suggestion. Replace with actual keyword suggestion logic.
@@ -94,11 +95,11 @@ const prompt = ai.definePrompt({
   El usuario quiere optimizar contenido para el tema "{{topic}}" en "{{country}}".
 
   1.  Analiza el contenido proporcionado (si existe) usando la herramienta 'analyzeContent'.
-  2.  Sugiere palabras clave (principal, secundarias, LSI) con su volumen de búsqueda estimado y dificultad de ranking usando la herramienta 'suggestKeywords'. Asegúrate que el formato sea "palabra (volumen: X, dificultad: Y)".
+  2.  Sugiere palabras clave (principal, secundarias, LSI) con su volumen de búsqueda estimado y dificultad de ranking usando la herramienta 'suggestKeywords'. Asegúrate que el formato sea "palabra (volumen: NÚMERO, dificultad: baja/media/alta)". Por ejemplo: "marketing digital (volumen: 2500, dificultad: media)".
   3.  Analiza los primeros 20 resultados de las SERPs para el tema y país dados usando la herramienta 'analyzeSERP'. Identifica patrones, tipos de contenido dominantes y oportunidades de posicionamiento.
   4.  Basándote en toda la información recopilada, proporciona un análisis general ('analysis') que resuma los hallazgos clave, cómo el contenido actual se compara (si se proporcionó), y recomendaciones específicas para mejorar el ranking. Este análisis debe integrar los insights del contenido, palabras clave y SERPs.
   5.  Rellena el campo 'serpAnalysis' con los hallazgos detallados de la herramienta 'analyzeSERP'.
-  6.  Asegúrate de que los campos de palabras clave en la salida final sigan el formato "palabra (volumen: X, dificultad: Y)".
+  6.  Asegúrate de que los campos de palabras clave en la salida final sigan el formato "palabra (volumen: NÚMERO, dificultad: baja/media/alta)".
 
 
   Tema: {{topic}}
