@@ -4,7 +4,7 @@
 /**
  * @fileOverview Analyzes content topic and target country, considers content objective,
  * target audience, and funnel step. It compares content against
- * existing indexed data (including SERP analysis), identifies areas for improvement,
+ * existing indexed data (including SERP analysis based on primary keyword), identifies areas for improvement,
  * suggests keywords, performs a SWOT (DOFA) analysis, and generates all responses in Spanish.
  *
  * - contentBenchmark - A function that handles the content benchmarking process.
@@ -33,8 +33,8 @@ const ContentBenchmarkOutputSchema = z.object({
   primaryKeyword: z.string().optional().describe('Palabra clave principal sugerida (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
   secondaryKeywords: z.array(z.string()).optional().describe('Palabras clave secundarias sugeridas (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
   lsiKeywords: z.array(z.string()).optional().describe('Palabras clave LSI sugeridas (formato: "keyword (volumen: NÚMERO, dificultad: baja/media/alta)"). En ESPAÑOL.'),
-  serpAnalysis: z.string().optional().describe("Hallazgos clave del análisis de los primeros 20 resultados de las SERPs. En ESPAÑOL."),
-  dofaAnalysis: z.string().optional().describe('Análisis DOFA (Debilidades, Oportunidades, Fortalezas, Amenazas) basado en toda la información. En ESPAÑOL.'),
+  serpAnalysis: z.string().optional().describe("Hallazgos clave del análisis de los primeros 20 resultados de las SERPs, basado en la palabra clave principal. En ESPAÑOL."),
+  dofaAnalysis: z.string().optional().describe('Análisis DOFA (Debilidades, Oportunidades, Fortalezas, Amenazas) basado en toda la información, formateado con Markdown. En ESPAÑOL.'),
 });
 export type ContentBenchmarkOutput = z.infer<typeof ContentBenchmarkOutputSchema>;
 
@@ -61,7 +61,7 @@ const analyzeContentTool = ai.defineTool({
 
 const suggestKeywordsTool = ai.defineTool({
   name: 'suggestKeywords',
-  description: 'Sugiere palabras clave primarias, secundarias y LSI con volumen de búsqueda estimado y dificultad de ranking. El volumen debe ser un número y la dificultad "baja", "media" o "alta". Toda la respuesta DEBE estar en ESPAÑOL.',
+  description: 'Sugiere palabras clave primarias, secundarias y LSI con volumen de búsqueda estimado (número) y dificultad de ranking ("baja", "media", "alta"). Toda la respuesta DEBE estar en ESPAÑOL.',
   inputSchema: z.object({
     topic: z.string().describe('El tema del contenido.'),
     country: z.string().describe('El país de destino para el contenido.'),
@@ -82,15 +82,15 @@ const suggestKeywordsTool = ai.defineTool({
 
 const analyzeSERPTool = ai.defineTool({
   name: 'analyzeSERP',
-  description: 'Analiza los primeros 20 resultados de las SERPs para un tema y país dados, y devuelve hallazgos clave para el posicionamiento. Toda la respuesta DEBE estar en ESPAÑOL.',
+  description: 'Analiza los primeros 20 resultados de las SERPs para una PALABRA CLAVE (o tema si no hay palabra clave) y país dados, y devuelve hallazgos clave para el posicionamiento. Toda la respuesta DEBE estar en ESPAÑOL.',
   inputSchema: z.object({
-    topic: z.string().describe('El tema para el cual analizar las SERPs.'),
+    keywordOrTopic: z.string().describe('La palabra clave principal (o el tema si no se encontró palabra clave) para el cual analizar las SERPs.'),
     country: z.string().describe('El país para el cual analizar las SERPs.'),
   }),
   outputSchema: z.string().describe("Un resumen de los hallazgos clave de las SERPs, incluyendo patrones comunes, tipos de contenido dominantes, y oportunidades identificadas. En ESPAÑOL."),
 }, async (input) => {
   // Placeholder for actual SERP analysis logic
-  return `Análisis SERP para '${input.topic}' en '${input.country}': [Este es un placeholder para los hallazgos de SERP en ESPAÑOL. Se identificarían aquí los tipos de contenido (ej. artículos de blog, videos, páginas de producto), la intención de búsqueda promedio (informativa, transaccional), la autoridad de los dominios principales (estimación), y las brechas de contenido u oportunidades (ej. falta de guías completas, poca información sobre X aspecto específico).]`;
+  return `Análisis SERP para '${input.keywordOrTopic}' en '${input.country}': [Este es un placeholder para los hallazgos de SERP en ESPAÑOL. Se identificarían aquí los tipos de contenido (ej. artículos de blog, videos, páginas de producto), la intención de búsqueda promedio (informativa, transaccional), la autoridad de los dominios principales (estimación), y las brechas de contenido u oportunidades (ej. falta de guías completas, poca información sobre X aspecto específico).]`;
 });
 
 
@@ -103,14 +103,34 @@ const prompt = ai.definePrompt({
   El usuario quiere optimizar contenido para el tema "{{topic}}" en "{{country}}".
   Considera también el objetivo del contenido "{{contentObjective}}", el público objetivo "{{targetAudience}}" y la etapa del funnel "{{funnelStep}}".
 
+  Sigue estos pasos:
   1.  Analiza el contenido proporcionado (si existe) usando la herramienta 'analyzeContent', tomando en cuenta el tema, país, objetivo, audiencia y etapa del funnel.
-  2.  Sugiere palabras clave (principal, secundarias, LSI) con su volumen de búsqueda estimado y dificultad de ranking usando la herramienta 'suggestKeywords'. Asegúrate que el formato sea "palabra (volumen: NÚMERO, dificultad: baja/media/alta)". Por ejemplo: "marketing digital (volumen: 2500, dificultad: media)". Las palabras clave DEBEN estar en ESPAÑOL.
-  3.  Analiza los primeros 20 resultados de las SERPs para el tema y país dados usando la herramienta 'analyzeSERP'. Identifica patrones, tipos de contenido dominantes y oportunidades de posicionamiento. Los hallazgos DEBEN estar en ESPAÑOL.
-  4.  Basándote en toda la información recopilada (análisis de contenido, palabras clave, análisis SERP, objetivo, audiencia, funnel), realiza un análisis DOFA (Debilidades, Oportunidades, Fortalezas, Amenazas) para la estrategia de contenido. Este análisis DOFA debe ser detallado y específico, en ESPAÑOL, y debe guardarse en el campo 'dofaAnalysis'.
+  2.  Sugiere palabras clave (principal, secundarias, LSI) con su volumen de búsqueda estimado y dificultad de ranking usando la herramienta 'suggestKeywords'. Asegúrate que el formato sea "palabra (volumen: NÚMERO, dificultad: baja/media/alta)". Por ejemplo: "marketing digital (volumen: 2500, dificultad: media)". Las palabras clave DEBEN estar en ESPAÑOL. Guarda la palabra clave principal para el siguiente paso.
+  3.  Utiliza la palabra clave principal sugerida en el paso anterior para el análisis SERP. Si no se sugirió una palabra clave principal, utiliza el tema original ("{{topic}}"). Analiza los primeros 20 resultados de las SERPs para esta palabra clave/tema y el país "{{country}}" usando la herramienta 'analyzeSERP'. Identifica patrones, tipos de contenido dominantes y oportunidades de posicionamiento. Los hallazgos DEBEN estar en ESPAÑOL.
+  4.  Basándote en toda la información recopilada (análisis de contenido, palabras clave, análisis SERP, objetivo, audiencia, funnel), realiza un análisis DOFA (Debilidades, Oportunidades, Fortalezas, Amenazas) para la estrategia de contenido. Este análisis DOFA debe ser detallado y específico, en ESPAÑOL. Formatea el análisis DOFA con títulos claros para cada sección usando Markdown, por ejemplo:
+      \`\`\`markdown
+      ### Debilidades
+      - Debilidad 1
+      - Debilidad 2
+
+      ### Oportunidades
+      - Oportunidad 1
+      - Oportunidad 2
+
+      ### Fortalezas
+      - Fortaleza 1
+      - Fortaleza 2
+
+      ### Amenazas
+      - Amenaza 1
+      - Amenaza 2
+      \`\`\`
+      Guarda este análisis formateado en el campo 'dofaAnalysis'.
   5.  Proporciona un análisis general ('analysis') que resuma los hallazgos clave, cómo el contenido actual se compara (si se proporcionó), y recomendaciones específicas para mejorar el ranking. Este análisis debe integrar los insights del contenido, palabras clave, SERPs y el DOFA. DEBE estar en ESPAÑOL.
-  6.  Rellena el campo 'serpAnalysis' con los hallazgos detallados de la herramienta 'analyzeSERP'.
+  6.  Rellena el campo 'serpAnalysis' con los hallazgos detallados de la herramienta 'analyzeSERP' del paso 3.
   7.  Asegúrate de que los campos de palabras clave en la salida final sigan el formato "palabra (volumen: NÚMERO, dificultad: baja/media/alta)".
 
+  Información de entrada:
   Tema: {{topic}}
   País: {{country}}
   {{#if contentObjective}}Objetivo del Contenido: {{contentObjective}}{{/if}}

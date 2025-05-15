@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Generates suitable titles and headers (H1 tags) for articles.
@@ -51,12 +52,13 @@ const prompt = ai.definePrompt({
   Palabra Clave Principal: {{primaryKeyword}}
   Palabras Clave Secundarias: {{secondaryKeywords}}
   Palabras Clave LSI: {{lsiKeywords}}
-  Tono: {{tone}}
-  Voz: {{voice}}
-  Estilo de Escritura: {{writingStyle}}
+  Tono deseado: {{tone}}
+  Voz deseada: {{voice}}
+  Estilo de Escritura deseado: {{writingStyle}}
 
   Los títulos deben ser llamativos e incorporar la palabra clave principal.
   Los encabezados (etiquetas H1) deben ser claros, concisos y relevantes para el contenido.
+  Asegúrate de que los títulos y encabezados reflejen el Tono ({{tone}}), la Voz ({{voice}}) y el Estilo de Escritura ({{writingStyle}}) especificados.
 
   Proporciona sugerencias de títulos y sugerencias de encabezados H1 como arrays de strings.
 
@@ -94,3 +96,4 @@ const generateTitlesHeadersFlow = ai.defineFlow(
     return output!;
   }
 );
+
