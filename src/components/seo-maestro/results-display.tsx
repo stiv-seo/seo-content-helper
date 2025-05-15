@@ -4,7 +4,7 @@
 import type { AnalysisResults } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, Lightbulb, ListChecks, Zap, SearchCheck, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Lightbulb, ListChecks, Zap, SearchCheck, Download, Target, Users, Filter, LayoutGrid, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Accordion,
@@ -12,6 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Separator } from '@/components/ui/separator';
 
 interface ResultsDisplayProps {
   results: AnalysisResults | null;
@@ -35,12 +36,60 @@ function KeywordsList({ title, keywords, icon: Icon }: { title: string; keywords
   );
 }
 
+function ContextDataItem({ label, value, icon: Icon }: { label: string; value?: string; icon: React.ElementType }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start text-sm">
+      <Icon className="w-4 h-4 mr-2 mt-1 text-primary flex-shrink-0" />
+      <div>
+        <span className="font-semibold">{label}:</span>
+        <span className="ml-1 text-foreground/80">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+const funnelStepLabels: { [key: string]: string } = {
+  tofu: "TOFU / Descubrimiento",
+  mofu: "MOFU / Consideración",
+  bofu: "BOFU / Decisión",
+};
+
 export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProps) {
   const handleDownload = () => {
     if (!results) return;
 
     let content = `# Resultados del Análisis SEO Content Helper\n\n`;
     content += `Fecha del análisis: ${new Date().toLocaleString()}\n\n`;
+
+    if (results.submittedFormValues) {
+      content += `## Configuración del Análisis Proporcionada\n\n`;
+      content += `**Tema Principal:** ${results.submittedFormValues.topic || 'N/A'}\n`;
+      content += `**País de Destino:** ${results.submittedFormValues.country || 'N/A'}\n`;
+      if (results.submittedFormValues.contentObjective) {
+        content += `**Objetivo del Contenido:** ${results.submittedFormValues.contentObjective}\n`;
+      }
+      if (results.submittedFormValues.targetAudience) {
+        content += `**Público Objetivo:** ${results.submittedFormValues.targetAudience}\n`;
+      }
+      if (results.submittedFormValues.funnelStep) {
+        content += `**Etapa del Funnel:** ${funnelStepLabels[results.submittedFormValues.funnelStep] || results.submittedFormValues.funnelStep}\n`;
+      }
+      if (results.submittedFormValues.tone) {
+        content += `**Tono:** ${results.submittedFormValues.tone}\n`;
+      }
+      if (results.submittedFormValues.voice) {
+        content += `**Voz:** ${results.submittedFormValues.voice}\n`;
+      }
+      if (results.submittedFormValues.writingStyle) {
+        content += `**Estilo de Escritura:** ${results.submittedFormValues.writingStyle}\n`;
+      }
+      if (results.submittedFormValues.content) {
+        content += `\n**Contenido Existente Analizado:**\n\`\`\`\n${results.submittedFormValues.content}\n\`\`\`\n`;
+      }
+      content += `\n---\n\n`;
+    }
+
 
     if (results.benchmark) {
       content += `## Análisis de Contenido y Benchmarking\n\n`;
@@ -55,6 +104,10 @@ export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProp
       if (results.benchmark.lsiKeywords && results.benchmark.lsiKeywords.length > 0) {
         content += `### Palabras Clave LSI Sugeridas:\n${results.benchmark.lsiKeywords.map(kw => `- ${kw}`).join('\n')}\n\n`;
       }
+    }
+    
+    if (results.benchmark?.dofaAnalysis) {
+      content += `## Análisis DOFA\n\n${results.benchmark.dofaAnalysis || 'N/A'}\n\n`;
     }
 
     if (results.benchmark?.serpAnalysis) {
@@ -75,8 +128,8 @@ export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProp
       }
     }
     
-    const topic = results.benchmark?.topic || "analisis";
-    const country = results.benchmark?.country || "general";
+    const topic = results.submittedFormValues?.topic || "analisis";
+    const country = results.submittedFormValues?.country || "general";
     const safeTopic = topic.replace(/[^a-z0-9_.-]/gi, '_').toLowerCase();
     const safeCountry = country.replace(/[^a-z0-9_.-]/gi, '_').toLowerCase();
     const filename = `analisis_seo_${safeTopic}_${safeCountry}.md`;
@@ -141,6 +194,8 @@ export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProp
       </Card>
     );
   }
+  
+  const submitted = results.submittedFormValues;
 
   return (
     <div className="mt-8 space-y-6">
@@ -151,21 +206,70 @@ export function ResultsDisplay({ results, isLoading, error }: ResultsDisplayProp
         </Button>
       </div>
 
-      <Accordion type="multiple" defaultValue={['item-benchmark', 'item-serp', 'item-titles']} className="w-full">
+      <Accordion type="multiple" defaultValue={['item-context', 'item-benchmark', 'item-dofa', 'item-serp', 'item-titles']} className="w-full">
+        
+        {submitted && (
+            <AccordionItem value="item-context">
+              <AccordionTrigger>
+                <CardTitle className="text-xl flex items-center text-primary">
+                  <Info className="w-5 h-5 mr-2" />
+                  Contexto del Análisis
+                </CardTitle>
+              </AccordionTrigger>
+              <AccordionContent>
+                <CardContent className="pt-4 space-y-2">
+                  <ContextDataItem label="Tema Principal" value={submitted.topic} icon={Lightbulb} />
+                  <ContextDataItem label="País de Destino" value={submitted.country} icon={Lightbulb} />
+                  <ContextDataItem label="Objetivo del Contenido" value={submitted.contentObjective} icon={Target} />
+                  <ContextDataItem label="Público Objetivo" value={submitted.targetAudience} icon={Users} />
+                  <ContextDataItem label="Etapa del Funnel" value={submitted.funnelStep ? funnelStepLabels[submitted.funnelStep] || submitted.funnelStep : undefined} icon={Filter} />
+                  <ContextDataItem label="Tono" value={submitted.tone} icon={Lightbulb} />
+                  <ContextDataItem label="Voz" value={submitted.voice} icon={Lightbulb} />
+                  <ContextDataItem label="Estilo de Escritura" value={submitted.writingStyle} icon={Lightbulb} />
+                   {submitted.content && (
+                    <>
+                      <Separator className="my-3" />
+                      <h4 className="text-md font-semibold mb-1">Contenido Existente Analizado:</h4>
+                      <p className="text-foreground/80 whitespace-pre-wrap p-2 border rounded-md bg-muted/50 max-h-48 overflow-y-auto text-xs">{submitted.content}</p>
+                    </>
+                  )}
+                </CardContent>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
         {results.benchmark && (
           <AccordionItem value="item-benchmark">
             <AccordionTrigger>
               <CardTitle className="text-xl flex items-center text-primary">
                 <CheckCircle2 className="w-5 h-5 mr-2" />
-                Análisis de Contenido y Benchmarking
+                Análisis de Contenido y Palabras Clave
               </CardTitle>
             </AccordionTrigger>
             <AccordionContent>
               <CardContent className="pt-4">
-                <p className="text-foreground/90 whitespace-pre-wrap">{results.benchmark.analysis}</p>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">Análisis General del Contenido:</h3>
+                <p className="text-foreground/90 whitespace-pre-wrap mb-4">{results.benchmark.analysis}</p>
+                <Separator className="my-4"/>
                 <KeywordsList title="Palabra Clave Principal Sugerida" keywords={results.benchmark.primaryKeyword ? [results.benchmark.primaryKeyword] : []} icon={Zap} />
                 <KeywordsList title="Palabras Clave Secundarias Sugeridas" keywords={results.benchmark.secondaryKeywords} icon={Zap} />
                 <KeywordsList title="Palabras Clave LSI Sugeridas" keywords={results.benchmark.lsiKeywords} icon={Zap} />
+              </CardContent>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+        
+        {results.benchmark?.dofaAnalysis && (
+           <AccordionItem value="item-dofa">
+            <AccordionTrigger>
+              <CardTitle className="text-xl flex items-center text-primary">
+                <LayoutGrid className="w-5 h-5 mr-2" />
+                Análisis DOFA
+              </CardTitle>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="pt-4">
+                <p className="text-foreground/90 whitespace-pre-wrap">{results.benchmark.dofaAnalysis}</p>
               </CardContent>
             </AccordionContent>
           </AccordionItem>

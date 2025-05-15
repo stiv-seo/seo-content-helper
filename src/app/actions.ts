@@ -1,3 +1,4 @@
+
 'use server';
 
 import { contentBenchmark, type ContentBenchmarkInput, type ContentBenchmarkOutput } from '@/ai/flows/content-benchmark';
@@ -18,6 +19,9 @@ export async function performFullAnalysisAction(
       topic: values.topic,
       country: values.country,
       content: values.content,
+      contentObjective: values.contentObjective,
+      targetAudience: values.targetAudience,
+      funnelStep: values.funnelStep,
       tone: values.tone,
       voice: values.voice,
       writingStyle: values.writingStyle,
@@ -53,6 +57,7 @@ export async function performFullAnalysisAction(
     return {
       benchmark: benchmarkResult,
       titlesHeaders: titlesHeadersResult,
+      submittedFormValues: values, // Pass submitted values for display
     };
 
   } catch (error) {

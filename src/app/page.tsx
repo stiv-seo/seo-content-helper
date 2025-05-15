@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -23,6 +24,9 @@ export default function SeoMaestroPage() {
       topic: '',
       country: '',
       content: '',
+      contentObjective: '',
+      targetAudience: '',
+      funnelStep: '',
       tone: '',
       voice: '',
       writingStyle: '',
@@ -36,7 +40,8 @@ export default function SeoMaestroPage() {
 
     try {
       const analysisData = await performFullAnalysisAction(values);
-      setResults(analysisData);
+      // Pass submitted form values along with analysis data to results
+      setResults({ ...analysisData, submittedFormValues: values });
       toast({
         title: "Análisis Completado",
         description: "Tus sugerencias de SEO están listas.",

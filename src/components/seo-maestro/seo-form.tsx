@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { UseFormReturn } from 'react-hook-form';
@@ -26,7 +27,11 @@ interface SeoFormProps {
 const toneOptions = ["Amigable", "Profesional", "Humorístico", "Serio", "Conversacional", "Informativo", "Persuasivo", "Urgente", "Empático", "Neutro"];
 const voiceOptions = ["Experto", "Cercano", "Autoritario", "Inspirador", "Didáctico", "Corporativa", "Juvenil", "Guía"];
 const writingStyleOptions = ["Narrativo", "Descriptivo", "Expositivo", "Argumentativo", "Técnico", "Creativo", "Periodístico", "Claro y conciso"];
-
+const funnelStepOptions = [
+  { value: "tofu", label: "TOFU / Descubrimiento" },
+  { value: "mofu", label: "MOFU / Consideración" },
+  { value: "bofu", label: "BOFU / Decisión" },
+];
 
 export function SeoForm({ form, onSubmit, isLoading }: SeoFormProps) {
   return (
@@ -65,6 +70,66 @@ export function SeoForm({ form, onSubmit, isLoading }: SeoFormProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="contentObjective"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Objetivo del Contenido (Opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Educar sobre X, Generar leads para Y" {...field} />
+              </FormControl>
+              <FormDescription>
+                ¿Qué buscas lograr con este contenido?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="targetAudience"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Público Objetivo (Opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Emprendedores de SaaS, Madres jóvenes" {...field} />
+              </FormControl>
+              <FormDescription>
+                ¿A quién te diriges específicamente?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+            control={form.control}
+            name="funnelStep"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Etapa del Funnel (Opcional)</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una etapa" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {funnelStepOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  ¿En qué parte del embudo de conversión se sitúa este contenido?
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
         <FormField
           control={form.control}
